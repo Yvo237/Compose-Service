@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport d'Analyse - {{Date}}</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --success: #1e8e3e;
+            --danger: #d93025;
+            --warning: #f9ab00;
+            --bg-body: #f8f9fa;
+            --text-main: #3c4043;
+        }
+        body { margin:0; padding:0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; }
+        .container { max-width: 650px; margin: 30px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; }
+        
+        /* Header */
+        .header { background: linear-gradient(135deg, #004aad, #002d6b); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; letter-spacing: 0.5px; }
+        .header p { margin: 10px 0 0; font-size: 14px; opacity: 0.9; }
+
+        .content { padding: 30px; }
+
+        /* Statut Badges */
+        .status-banner { border-radius: 8px; padding: 20px; margin-bottom: 25px; text-align: center; }
+        .bg-success { background-color: #e6f4ea; border: 1px solid #ceead6; color: var(--success); }
+        .bg-error { background-color: #fce8e6; border: 1px solid #fad2cf; color: var(--danger); }
+        
+        /* Table & Metrics */
+        .metrics-grid { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .metrics-grid td { padding: 15px; background: #f1f3f4; border-radius: 4px; }
+        .metric-label { font-weight: 600; font-size: 14px; color: #5f6368; }
+        .metric-value { text-align: right; font-weight: bold; font-size: 16px; color: var(--primary); }
+
+        /* Progress Bar for Quality Score */
+        .quality-bar-container { background: #e8eaed; border-radius: 10px; height: 10px; margin-top: 8px; overflow: hidden; }
+        .quality-bar-fill { background: var(--primary); height: 100%; border-radius: 10px; }
+
+        /* Buttons */
+        .btn { display: inline-block; padding: 12px 28px; background-color: var(--primary); color: white !important; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; transition: background 0.3s; }
+        .btn:hover { background-color: #1557b0; }
+
+        .footer { background: #f1f3f4; padding: 20px; text-align: center; font-size: 12px; color: #70757a; border-top: 1px solid #e0e0e0; }
+        code { background: #fee; padding: 2px 5px; border-radius: 4px; color: #c53929; font-family: 'Courier New', monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Platforme d'Analyse de Données</h1>
+        </div>
+
+        <div class="content">
+            {% if Success %}
+                <div class="status-banner bg-success">
+                    <h2 style="margin:0 0 10px 0;">&#x2713; Publication Réussie</h2>
+                    <p style="margin:0;">Votre dataset a été traité et mis en ligne avec succès sur Kaggle.</p>
+                </div>
+                
+                {% if KaggleURL %}
+                <div style="text-align:center;">
+                    <a href="{{KaggleURL}}" class="btn">Accéder au Dataset</a>
+                </div>
+                {% endif %}
+            
+            {% else %}
+                <div class="status-banner bg-error">
+                    <h2 style="margin:0 0 10px 0;">&#x2717; Échec de l'opération</h2>
+                    <p style="margin:0;">Nous avons rencontré une difficulté lors de la publication.</p>
+                </div>
+                
+                {% if ErrorMessage %}
+                <div style="background: #fff4f4; border-left: 4px solid var(--danger); padding: 15px; margin-bottom: 20px;">
+                    <strong style="color:var(--danger)">Erreur :</strong><br>
+                    <code>{{ErrorMessage}}</code>
+                </div>
+                {% endif %}
+            {% endif %}
+
+            {% if SummaryData %}
+                <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px; color: var(--primary);">Résumé de l'Analyse</h3>
+                <table class="metrics-grid">
+                    <tr>
+                        <td class="metric-label">Datasets créés</td>
+                        <td class="metric-value">{{SummaryData["datasets_created"]}}</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Publications réussies</td>
+                        <td class="metric-value" style="color: var(--success);">{{SummaryData["datasets_published"]}}</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Taux d'échec</td>
+                        <td class="metric-value" style="color: var(--danger);">{{SummaryData["publication_failures"]}}</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-label" colspan="2">
+                            Score Qualité Moyen : <strong>{{SummaryData["avg_quality_score"]}}/10</strong>
+                            <div class="quality-bar-container">
+                                <div class="quality-bar-fill" style="width: {{SummaryData["avg_quality_score"]}}0%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p><strong>Notification Automatisée - Système DataScience </strong></p>
+            <p>Ceci est un message généré par votre pipeline d'analyse. <br> 
+               Généré le {{Date}}</p>
+        </div>
+    </div>
+</body>
+</html>

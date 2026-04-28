@@ -1,0 +1,52 @@
+services:
+  celery_worker:
+    build:
+      context: ../../data_collection_service
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - ../../data_collection_service:/app:delegated
+      - /app/tmp
+      - /app/__pycache__
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - ENV=development
+      - DATABASE_URL=postgresql://admin:admin1234@analysis_db:5432/analysis_db
+      - CELERY_BROKER_URL=redis://redis_queue:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
+    command: ["python", "celery_worker.py"]
+    networks:
+      - analysis_network
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    scale: 2  # 2 workers en parallèle
+
+  celery_beat:
+    build:
+      context: ../../data_collection_service
+      dockerfile: Dockerfile
+      target: development
+    container_name: celery_beat
+    volumes:
+      - ../../data_collection_service:/app:delegated
+      - /app/tmp
+      - /app/__pycache__
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - ENV=development
+      - DATABASE_URL=postgresql://admin:admin1234@analysis_db:5432/analysis_db
+      - CELERY_BROKER_URL=redis://redis_queue:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
+    command: ["python", "celery_beat.py"]
+    networks:
+      - analysis_network
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
