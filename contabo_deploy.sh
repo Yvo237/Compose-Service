@@ -8,7 +8,7 @@ REPORTING_REPO_URL="https://github.com/Yvo237/Reporting-Service.git"
 COMPOSE_REPO_URL="https://github.com/Yvo237/Compose-Service.git"
 
 PROJECT_PATH="/home/$USER/Lan"
-DOMAIN="YOUR_VPS_IP_OR_DOMAIN"
+DOMAIN="158.220.97.53"
 DB_USER="admin"
 DB_PASSWORD="admin1234"
 DB_NAME="analysis_db"
@@ -92,5 +92,10 @@ docker compose up -d --build
 docker compose ps
 
 echo "\nDéploiement terminé."
-echo "Teste maintenant : http://$DOMAIN/v1/health"
+echo "Backend disponible : http://$DOMAIN/v1/health"
 echo "Si le domaine n'est pas encore configuré, teste localement depuis le VPS : http://localhost/v1/health"
+echo ""
+echo "🔗 Pour l'architecture hybride :"
+echo "- Frontend Vercel : https://your-app.vercel.app"
+echo "- Backend Contabo : http://$DOMAIN"
+echo "- Mettez à jour VITE_API_URL dans Reporting-Service avec : http://$DOMAIN"
