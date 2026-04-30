@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS datasets (
     user_id VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     status VARCHAR(20) DEFAULT 'raw', -- Enum: raw, processing, cleaned, premium, published, rejected
-    quality_score DECIMAL(3,2), -- Score 0.00-10.00
+    quality_score DECIMAL(4,2), -- Score 0.00-10.00
     raw_data JSONB,
     cleaned_data JSONB,
     headers TEXT[] NOT NULL,
@@ -19,10 +19,11 @@ CREATE TABLE IF NOT EXISTS datasets (
     file_hash VARCHAR(64) UNIQUE, -- Hash SHA256 pour éviter les doublons
     metadata JSONB, -- Informations supplémentaires (mime_type, encoding, etc.)
     processing_log JSONB, -- Data lineage complet
-    kaggle_info JSONB, -- Infos publication Kaggle
     analysis_type VARCHAR(100), -- Type d'analyse demandé
     analysis_parameters JSONB, -- Paramètres de l'analyse
     analysis_results JSONB, -- Résultats de l'analyse
+    storage_path VARCHAR(500), -- Chemin vers le CSV nettoyé sur disque
+    results_path VARCHAR(500), -- Chemin vers le JSON des résultats sur disque
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -38,28 +39,10 @@ CREATE TABLE IF NOT EXISTS processing_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Créer la table des logs d'emails
-CREATE TABLE IF NOT EXISTS email_logs (
-    id SERIAL PRIMARY KEY,
-    email_type VARCHAR(50) NOT NULL,
-    dataset_id INTEGER REFERENCES datasets(id) ON DELETE SET NULL,
-    recipient_email VARCHAR(255) NOT NULL,
-    subject TEXT NOT NULL,
-    status VARCHAR(20) NOT NULL,
-    error_message TEXT,
-    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Index pour les logs de traitement
 CREATE INDEX IF NOT EXISTS idx_processing_logs_dataset_id ON processing_logs(dataset_id);
 CREATE INDEX IF NOT EXISTS idx_processing_logs_step ON processing_logs(step);
 CREATE INDEX IF NOT EXISTS idx_processing_logs_created_at ON processing_logs(created_at);
-
--- Index pour les logs d'emails
-CREATE INDEX IF NOT EXISTS idx_email_logs_type ON email_logs(email_type);
-CREATE INDEX IF NOT EXISTS idx_email_logs_status ON email_logs(status);
-CREATE INDEX IF NOT EXISTS idx_email_logs_dataset_id ON email_logs(dataset_id);
-CREATE INDEX IF NOT EXISTS idx_email_logs_sent_at ON email_logs(sent_at);
 
 -- Index pour optimiser les requêtes sur la table unifiée
 CREATE INDEX IF NOT EXISTS idx_datasets_user_id ON datasets(user_id);
@@ -75,7 +58,6 @@ CREATE INDEX IF NOT EXISTS idx_datasets_raw_data ON datasets USING GIN(raw_data)
 CREATE INDEX IF NOT EXISTS idx_datasets_cleaned_data ON datasets USING GIN(cleaned_data);
 CREATE INDEX IF NOT EXISTS idx_datasets_metadata ON datasets USING GIN(metadata);
 CREATE INDEX IF NOT EXISTS idx_datasets_processing_log ON datasets USING GIN(processing_log);
-CREATE INDEX IF NOT EXISTS idx_datasets_kaggle_info ON datasets USING GIN(kaggle_info);
 CREATE INDEX IF NOT EXISTS idx_datasets_analysis_results ON datasets USING GIN(analysis_results);
 
 -- Index pour les headers (tableau de textes)

@@ -1,19 +1,12 @@
 services:
   celery_worker:
     build:
-      context: ../../data_collection_service
+      context: ../../Ingestion-Service
       dockerfile: Dockerfile
-      target: development
-    volumes:
-      - ../../data_collection_service:/app:delegated
-      - /app/tmp
-      - /app/__pycache__
-    working_dir: /app
+      target: production
     environment:
-      - PYTHONPATH=/app
-      - PYTHONUNBUFFERED=1
-      - ENV=development
-      - DATABASE_URL=postgresql://admin:admin1234@analysis_db:5432/analysis_db
+      - ENV=production
+      - DATABASE_URL=postgresql://${DB_USER:-admin}:${DB_PASSWORD:-password}@analysis_db:5432/${DB_NAME:-analysis_db}
       - CELERY_BROKER_URL=redis://redis_queue:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
     command: ["python", "celery_worker.py"]
@@ -23,24 +16,31 @@ services:
       - redis
       - postgres
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'celery' >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     scale: 2  # 2 workers en parallèle
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   celery_beat:
     build:
-      context: ../../data_collection_service
+      context: ../../Ingestion-Service
       dockerfile: Dockerfile
-      target: development
+      target: production
     container_name: celery_beat
-    volumes:
-      - ../../data_collection_service:/app:delegated
-      - /app/tmp
-      - /app/__pycache__
-    working_dir: /app
     environment:
-      - PYTHONPATH=/app
-      - PYTHONUNBUFFERED=1
-      - ENV=development
-      - DATABASE_URL=postgresql://admin:admin1234@analysis_db:5432/analysis_db
+      - ENV=production
+      - DATABASE_URL=postgresql://${DB_USER:-admin}:${DB_PASSWORD:-password}@analysis_db:5432/${DB_NAME:-analysis_db}
       - CELERY_BROKER_URL=redis://redis_queue:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
     command: ["python", "celery_beat.py"]
@@ -50,3 +50,9 @@ services:
       - redis
       - postgres
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'celery' >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

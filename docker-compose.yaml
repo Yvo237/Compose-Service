@@ -2,26 +2,14 @@
 include:
   - services/postgres.yaml
   - services/celery_workers.yaml
-  - services/notification_service.yaml
-  - ../analysis_service/deployment/docker-compose.yaml
-  - ../data_collection_service/deployment/docker-compose.yaml
-  - ../lan-Webapp/deployment/docker-compose.yaml
+  - ../Analytics-Service/deployment/docker-compose.yaml
+  - ../Ingestion-Service/deployment/docker-compose.yaml
+  - ../Reporting-Service/deployment/docker-compose.yaml
 
 services:
-  mailhog:
-    image: mailhog/mailhog
-    container_name: mailhog_smtp
-    ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
-    networks:
-      - analysis_network
-
   redis:
     image: redis:7-alpine
     container_name: redis_queue
-    ports:
-      - "6379:6379"
     networks:
       - analysis_network
     restart: unless-stopped
@@ -32,17 +20,15 @@ services:
     restart: always
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./email-templates:/etc/nginx/html/templates:ro
     networks:
       - analysis_network
     depends_on:
-      - analysis_service
-      - data_collection_service
+      - analytics_service
+      - ingestion_service
+      - reporting_service
       - redis
-      - notification_service
 
 networks:
   analysis_network:
