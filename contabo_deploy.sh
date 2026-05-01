@@ -33,7 +33,7 @@ cd "$PROJECT_PATH"
 # Installer Docker si nécessaire
 if ! command -v docker >/dev/null 2>&1; then
   echo "Installation de Docker..."
-  curl -fsSL https://get.docker.com | sh
+  /usr/bin/curl -fsSL https://get.docker.com | sh
 fi
 
 # Installer Docker Compose si nécessaire
