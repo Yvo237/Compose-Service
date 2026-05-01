@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# S'assurer que le PATH est correct
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 # Configuration des repositories
 ANALYTICS_REPO_URL="https://github.com/Yvo237/Analytics-Service.git"
 INGESTION_REPO_URL="https://github.com/Yvo237/Ingestion-Service.git"
@@ -33,7 +36,7 @@ cd "$PROJECT_PATH"
 # Installer Docker si nécessaire
 if ! command -v docker >/dev/null 2>&1; then
   echo "Installation de Docker..."
-  /usr/bin/curl -fsSL https://get.docker.com | sh
+  curl -fsSL https://get.docker.com | sh
 fi
 
 # Installer Docker Compose si nécessaire
